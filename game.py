@@ -1,8 +1,15 @@
 import numpy as np
 import time
+import pygame, sys
 
 NEIGHBOURS = {-1, 0, 1}
 coordinates = [(i,j) for i in NEIGHBOURS for j in NEIGHBOURS if not (i==0 and j == 0)]
+
+WHITE = (255, 255, 255)
+BLACK = (  0,   0,   0)
+RED = (  255,   0,   0)
+
+
 ALIVE = 1
 DEAD = 0
 
@@ -77,10 +84,47 @@ class Game:
 		else:
 			return "."
 
+class PyGameBoard:
+
+	cellSize = 10
+	
+	def __init__(self, board):
+		self.gridWidth = board.shape[0]
+		self.gridHeight = board.shape[1]
+		self.windowWidth = self.cellSize*board.shape[0]
+		self.windowHeight = self.cellSize*board.shape[1]
+		pygame.init()
+		self.DISPLAYSURF = pygame.display.set_mode((self.windowWidth, self.windowHeight))
+		pygame.display.set_caption('Game of Life')
+		self.backgroundColour = BLACK
+		self.DISPLAYSURF.fill(self.backgroundColour)
+		pygame.display.update()
+
+	def boardToFillCells(self, board):
+		for x in xrange(self.gridWidth):
+			for y in xrange(self.gridHeight):
+				self.fillCell(x,y, self.backgroundColour)
+				if board[x,y] == ALIVE:
+					self.fillCell(x,y, RED)
+		pygame.display.update()
+
+	def fillCell(self, cell_x, cell_y, colour):
+		self.DISPLAYSURF.fill(colour, pygame.Rect(cell_x*self.cellSize, cell_y*self.cellSize, self.cellSize, self.cellSize))
+
 if __name__ == '__main__':
 	board = pulsar()
 	game = Game(board)
-	while 1:
-		print game
-		time.sleep(2)
+	pyBoard = PyGameBoard(board)
+	
+	done = False
+	clock = pygame.time.Clock()
+	
+	while not done:
+		clock.tick(10)
+		
+		for event in pygame.event.get():
+			if event.type == pygame.QUIT:
+				done=True 
+		
 		game.updateBoard()
+		pyBoard.boardToFillCells(game.board)
